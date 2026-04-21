@@ -7,12 +7,14 @@ spring:
     name: yu-picture-backend
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/yu_picture
+    url: jdbc:mysql://localhost:3306/yu-picture
     username: root
     password: 20041115
 #mabatis-plus配置
 mybatis-plus:
     configuration:
+        #禁止驼峰命名转换，数据库字段和实体类属性保持一致
+        map-underscore-to-camel-case: false
         log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #仅在开发环境打印日志
     global-config:
         db-config:
