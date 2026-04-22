@@ -67,4 +67,15 @@ public class UserController {
         return ResultUtils.success(userService.getLoginUserVO(loginUser));
     }
 
+    /**
+     * 用户注销接口--退出登录
+     * @param request
+     * @return
+     */
+    @PostMapping("/logout")
+    public BaseResponse<Boolean> userLogout(HttpServletRequest request){
+        boolean result = userService.userLogout(request);
+        return ResultUtils.success(result);
+    }
+
 }

@@ -152,6 +152,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         final String salt = "yupi";
         return DigestUtils.md5DigestAsHex((salt + userPassword).getBytes());
     }
+
+    /**
+     * 用户注销--退出登录
+     * @param request
+     * @return
+     */
+    @Override
+    public boolean userLogout(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        if(userObj == null) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
+        }
+        request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
+        return true;
+    }
 }
 
 
