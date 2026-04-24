@@ -1,10 +1,14 @@
 package com.yupi.yupicturebackend.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.yupi.yupicturebackend.model.dto.user.UserQueryRequest;
 import com.yupi.yupicturebackend.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupi.yupicturebackend.model.vo.LoginUserVO;
+import com.yupi.yupicturebackend.model.vo.UserVO;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author songran
@@ -46,6 +50,19 @@ public interface UserService extends IService<User> {
     User getLoginUser(HttpServletRequest request);
 
     /**
+     * 实体转换为脱敏后的用户视图对象
+     * @param user
+     * @return
+     */
+    UserVO getUserVO(User user);
+
+    /**
+     * 实体列表转换为脱敏后的用户视图对象列表
+     * @param userList
+     * @return
+     */
+    List<UserVO> getUserVOList(List<User> userList);
+    /**
      * 获取加密后的密码
      * @param userPassword
      * @return
@@ -58,4 +75,11 @@ public interface UserService extends IService<User> {
      * @return
      */
     boolean userLogout(HttpServletRequest request);
+
+    /**
+     * 根据查询请求构建查询条件
+     * @param userQueryRequest
+     * @return
+     */
+    QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 }

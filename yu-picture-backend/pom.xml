@@ -29,6 +29,11 @@
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.5.15</version>
         </dependency>
+        <!--分页插件-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser-4.9</artifactId>
+        </dependency>
         <!--工具库 https://baomidou.com/introduce/-->
         <dependency>
             <groupId>cn.hutool</groupId>
@@ -67,6 +72,15 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-bom</artifactId>
+                <version>3.5.15</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
