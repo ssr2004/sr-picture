@@ -5,12 +5,11 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.yupi.yupicturebackend.annotation.AuthCheck;
-import com.yupi.yupicturebackend.common.BaseResponse;
 import com.yupi.yupicturebackend.constant.UserConstant;
 import com.yupi.yupicturebackend.exception.BusinessException;
 import com.yupi.yupicturebackend.exception.ErrorCode;
 import com.yupi.yupicturebackend.model.dto.user.UserQueryRequest;
+import com.yupi.yupicturebackend.model.dto.user.UserUpdateSelfRequest;
 import com.yupi.yupicturebackend.model.entity.User;
 import com.yupi.yupicturebackend.model.enums.UserRoleEnum;
 import com.yupi.yupicturebackend.model.vo.LoginUserVO;
@@ -19,10 +18,7 @@ import com.yupi.yupicturebackend.service.UserService;
 import com.yupi.yupicturebackend.mapper.UserMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -238,8 +234,53 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return queryWrapper;
     }
 
+    /**
+     * 用户更新个人信息（本人）
+     * @param userUpdateSelfRequest
+     * @param loginUser
+     * @return
+     */
+    @Override
+    public boolean updateUserSelf(UserUpdateSelfRequest userUpdateSelfRequest, User loginUser) {
+        if (userUpdateSelfRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        if (loginUser == null || loginUser.getId() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+
+        User user = new User();
+        user.setId(loginUser.getId());
+
+        boolean hasUpdate = false;
+
+        String userName = userUpdateSelfRequest.getUserName();
+        if (StrUtil.isNotBlank(userName)) {
+            user.setUserName(userName.trim());
+            hasUpdate = true;
+        }
+
+        String userAvatar = userUpdateSelfRequest.getUserAvatar();
+        if (StrUtil.isNotBlank(userAvatar)) {
+            user.setUserAvatar(userAvatar.trim());
+            hasUpdate = true;
+        }
+
+        String userProfile = userUpdateSelfRequest.getUserProfile();
+        if (StrUtil.isNotBlank(userProfile)) {
+            user.setUserProfile(userProfile.trim());
+            hasUpdate = true;
+        }
+
+        if (!hasUpdate) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        boolean result = this.updateById(user);
+        if (!result) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR);
+        }
+        return true;
+    }
+
 }
-
-
-
-

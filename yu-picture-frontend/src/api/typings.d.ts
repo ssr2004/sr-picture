@@ -128,6 +128,12 @@ declare namespace API {
     userRole?: string
   }
 
+  type UserUpdateSelfRequest = {
+    userAvatar?: string
+    userName?: string
+    userProfile?: string
+  }
+
   type UserVO = {
     createTime?: string
     id?: number

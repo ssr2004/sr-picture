@@ -2,6 +2,7 @@ package com.yupi.yupicturebackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yupi.yupicturebackend.model.dto.user.UserQueryRequest;
+import com.yupi.yupicturebackend.model.dto.user.UserUpdateSelfRequest;
 import com.yupi.yupicturebackend.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupi.yupicturebackend.model.vo.LoginUserVO;
@@ -75,6 +76,14 @@ public interface UserService extends IService<User> {
      * @return
      */
     boolean userLogout(HttpServletRequest request);
+
+    /**
+     * 用户更新个人信息（本人）
+     * @param userUpdateSelfRequest
+     * @param loginUser
+     * @return
+     */
+    boolean updateUserSelf(UserUpdateSelfRequest userUpdateSelfRequest, User loginUser);
 
     /**
      * 根据查询请求构建查询条件

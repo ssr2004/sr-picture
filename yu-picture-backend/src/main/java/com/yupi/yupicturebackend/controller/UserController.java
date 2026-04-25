@@ -15,7 +15,6 @@ import com.yupi.yupicturebackend.model.enums.UserRoleEnum;
 import com.yupi.yupicturebackend.model.vo.LoginUserVO;
 import com.yupi.yupicturebackend.model.vo.UserVO;
 import com.yupi.yupicturebackend.service.UserService;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -165,6 +164,21 @@ public class UserController {
          ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
          return ResultUtils.success(result);
      }
+
+    /**
+     * 用户更新个人信息接口（本人）
+     * @param userUpdateSelfRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/update/my")
+    public BaseResponse<Boolean> updateMyUser(@RequestBody UserUpdateSelfRequest userUpdateSelfRequest,
+                                              HttpServletRequest request) {
+        ThrowUtils.throwIf(userUpdateSelfRequest == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        boolean result = userService.updateUserSelf(userUpdateSelfRequest, loginUser);
+        return ResultUtils.success(result);
+    }
 
     /**
      * 分页获取用户视图接口--管理员权限
