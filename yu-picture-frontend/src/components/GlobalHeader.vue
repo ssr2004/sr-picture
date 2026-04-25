@@ -31,6 +31,10 @@
                     <user-outlined />
                     个人中心
                   </a-menu-item>
+                  <a-menu-item @click="goToUpdatePassword">
+                    <lock-outlined />
+                    修改密码
+                  </a-menu-item>
                   <a-menu-item @click="doLogout">
                     <logout-outlined />
                     退出登录
@@ -50,7 +54,7 @@
 
 <script lang="ts" setup>
 import { computed, h, ref } from 'vue'
-import { HomeOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { HomeOutlined, LockOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { message, type MenuProps } from 'ant-design-vue'
 import { RouterLink } from 'vue-router'
 const loginUserStore = useLoginUserStore()
@@ -129,6 +133,10 @@ const doLogout = async () => {
 
 const goToProfile = async () => {
   await router.push('/user/profile')
+}
+
+const goToUpdatePassword = async () => {
+  await router.push('/user/password')
 }
 </script>
 

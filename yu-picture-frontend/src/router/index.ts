@@ -5,6 +5,7 @@ import UserLoginPage from '@/pages/user/UserLoginPage.vue'
 import UserRegisterPage from '@/pages/user/UserRegisterPage.vue'
 import UserManagePage from '@/pages/admin/UserManagePage.vue'
 import UserProfilePage from '@/pages/user/UserProfilePage.vue'
+import UserPasswordPage from '@/pages/user/UserPasswordPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,6 +42,11 @@ const router = createRouter({
       path: '/user/profile',
       name: '个人中心',
       component: UserProfilePage,
+    },
+    {
+      path: '/user/password',
+      name: '修改密码',
+      component: UserPasswordPage,
     },
   ],
 })

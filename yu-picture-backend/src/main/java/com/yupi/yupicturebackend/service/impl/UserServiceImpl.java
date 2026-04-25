@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.yupicturebackend.constant.UserConstant;
 import com.yupi.yupicturebackend.exception.BusinessException;
 import com.yupi.yupicturebackend.exception.ErrorCode;
+import com.yupi.yupicturebackend.model.dto.user.UserPasswordUpdateRequest;
 import com.yupi.yupicturebackend.model.dto.user.UserQueryRequest;
 import com.yupi.yupicturebackend.model.dto.user.UserUpdateSelfRequest;
 import com.yupi.yupicturebackend.model.entity.User;
@@ -280,6 +281,64 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (!result) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR);
         }
+        return true;
+    }
+
+    /**
+     * 用户修改密码（本人），修改成功后使当前会话失效
+     * @param userPasswordUpdateRequest
+     * @param loginUser
+     * @param request
+     * @return
+     */
+    @Override
+    public boolean updateUserPassword(UserPasswordUpdateRequest userPasswordUpdateRequest, User loginUser, HttpServletRequest request) {
+        if (userPasswordUpdateRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+        }
+        if (loginUser == null || loginUser.getId() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+
+        String oldPassword = userPasswordUpdateRequest.getOldPassword();
+        String newPassword = userPasswordUpdateRequest.getNewPassword();
+        String checkPassword = userPasswordUpdateRequest.getCheckPassword();
+
+        if (StrUtil.hasBlank(oldPassword, newPassword, checkPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+        if (newPassword.length() < 8 || checkPassword.length() < 8) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "新密码长度不能小于8位");
+        }
+        if (!newPassword.equals(checkPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的新密码不一致");
+        }
+
+        User dbUser = this.getById(loginUser.getId());
+        if (dbUser == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+
+        String encryptOldPassword = getEncryptPassword(oldPassword);
+        if (!encryptOldPassword.equals(dbUser.getUserPassword())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "旧密码错误");
+        }
+
+        String encryptNewPassword = getEncryptPassword(newPassword);
+        if (encryptNewPassword.equals(dbUser.getUserPassword())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "新密码不能与旧密码相同");
+        }
+
+        User updateUser = new User();
+        updateUser.setId(loginUser.getId());
+        updateUser.setUserPassword(encryptNewPassword);
+        boolean result = this.updateById(updateUser);
+        if (!result) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "密码修改失败");
+        }
+
+        // Invalidate current session after password change.
+        request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
         return true;
     }
 

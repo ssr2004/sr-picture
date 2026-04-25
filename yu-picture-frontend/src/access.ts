@@ -19,7 +19,7 @@ router.beforeEach(async (to, from, next) => {
         firstFetchLoginUser = false;
     }
     const toUrl = to.fullPath
-    if (toUrl.startsWith('/user/profile')) {
+    if (toUrl.startsWith('/user/profile') || toUrl.startsWith('/user/password')) {
         if (!loginUser || !loginUser.id) {
             message.warning('请先登录')
             next(`/user/login?redirect=${encodeURIComponent(to.fullPath)}`)

@@ -181,6 +181,21 @@ public class UserController {
     }
 
     /**
+     * 用户修改密码接口（本人）
+     * @param userPasswordUpdateRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/password/update")
+    public BaseResponse<Boolean> updateUserPassword(@RequestBody UserPasswordUpdateRequest userPasswordUpdateRequest,
+                                                    HttpServletRequest request) {
+        ThrowUtils.throwIf(userPasswordUpdateRequest == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        boolean result = userService.updateUserPassword(userPasswordUpdateRequest, loginUser, request);
+        return ResultUtils.success(result);
+    }
+
+    /**
      * 分页获取用户视图接口--管理员权限
      * @param userQueryRequest
      * @return

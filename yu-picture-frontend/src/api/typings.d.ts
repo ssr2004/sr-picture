@@ -102,6 +102,12 @@ declare namespace API {
     userPassword?: string
   }
 
+  type UserPasswordUpdateRequest = {
+    checkPassword?: string
+    newPassword?: string
+    oldPassword?: string
+  }
+
   type UserQueryRequest = {
     current?: number
     id?: number

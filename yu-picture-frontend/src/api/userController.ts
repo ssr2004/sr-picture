@@ -105,6 +105,21 @@ export async function userLogoutUsingPost(options?: { [key: string]: any }) {
   })
 }
 
+/** updateUserPassword POST /api/user/password/update */
+export async function updateUserPasswordUsingPost(
+  body: API.UserPasswordUpdateRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/user/password/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** userRegister POST /api/user/register */
 export async function userRegisterUsingPost(
   body: API.UserRegisterRequest,
