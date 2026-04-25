@@ -26,13 +26,15 @@ myAxios.interceptors.response.use(
         const { data } = response;
         // 未登录
         if (data.code === 40100) {
-            //不是获取用户信息的强求，并且用户目前不是已经在用户登录界面，则跳转到登录页面
+            const requestUrl = response.config?.url ?? '';
+            // 不是获取登录用户信息的请求，并且当前不在登录页，才提示并跳转
             if (
-                !response.request.repsponseURL.includes('/user/get/login') &&
+                !requestUrl.includes('/user/get/login') &&
                 !window.location.pathname.includes('/user/login')
             ) {
                 message.warning('请先登录')
-                window.location.href = '/user/login?redirect=${window.location.href}';
+                const redirect = encodeURIComponent(window.location.href);
+                window.location.href = `/user/login?redirect=${redirect}`;
             }
         }
         return response;
