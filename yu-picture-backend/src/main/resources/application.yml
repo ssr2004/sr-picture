@@ -5,11 +5,13 @@ server:
 spring:
   application:
     name: yu-picture-backend
+  profiles:
+    active: local
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/yu-picture
-    username: root
-    password: 20041115
+    driver-class-name: ${sr.datasource.driver-class-name}
+    url: ${sr.datasource.url}
+    username: ${sr.datasource.username}
+    password: ${sr.datasource.password}
 #mabatis-plus配置
 mybatis-plus:
     configuration:
@@ -32,4 +34,11 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.yupi.yupicturebackend.controller
-
+#对象存储配置（腾讯云）
+cos:
+  client:
+    host: ${sr.client.host}
+    secretId: ${sr.client.secretId}
+    secretKey: ${sr.client.secretKey}
+    region: ${sr.client.region}
+    bucket: ${sr.client.bucket}
