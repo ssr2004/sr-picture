@@ -12,6 +12,9 @@ spring:
     url: ${sr.datasource.url}
     username: ${sr.datasource.username}
     password: ${sr.datasource.password}
+  servlet:
+    multipart:
+      max-file-size: 10MB
 #mabatis-plus配置
 mybatis-plus:
     configuration:
