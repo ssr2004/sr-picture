@@ -43,3 +43,12 @@ create table if not exists picture
     index idx_tags (tags), -- 提升基于标签的查询性能
     index idx_userId (userId) -- 提升基于用户ID的查询性能
 ) comment '图片' collate = utf8mb4_unicode_ci;
+
+alter table picture
+    add column reviewStatus int default 0 not null comment '审核状态：0-待审核，1-通过，2-拒绝',
+    add column reviewMessage varchar(512) null comment '审核信息',
+    add column reviewId bigint null comment '审核人ID',
+    add column reviewTime datetime null comment '审核时间';
+
+-- 创建基于 reviewStatus 列的索引
+create index idx_reviewStatus on picture (reviewStatus);
