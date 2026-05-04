@@ -1,6 +1,7 @@
 package com.yupi.yupicturebackend.manager.upload;
 
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -11,7 +12,9 @@ import cn.hutool.http.HttpStatus;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
 import com.qcloud.cos.model.PutObjectResult;
+import com.qcloud.cos.model.ciModel.persistence.CIObject;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
+import com.qcloud.cos.model.ciModel.persistence.ProcessResults;
 import com.yupi.yupicturebackend.config.CosClientConfig;
 import com.yupi.yupicturebackend.exception.BusinessException;
 import com.yupi.yupicturebackend.exception.ErrorCode;
@@ -61,10 +64,18 @@ public abstract class PictureUploadTemplate {
         try {
             //创建临时文件
             file = File.createTempFile(uploadPath, null);
+            //处理文件来源（本地或URL）
             processFile(inputSource, file);
             //上传图片
             PutObjectResult putObjectResult = cosManager.putPictureObject(uploadPath, file);
             ImageInfo imageInfo = putObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
+            ProcessResults processResults = putObjectResult.getCiUploadResult().getProcessResults();
+            List<CIObject> objectList = processResults.getObjectList();
+            if(CollUtil.isNotEmpty(objectList)){
+                CIObject compressCiObject = objectList.get(0);
+                //封装压缩图返回结果
+                return buildResult(originFilename, compressCiObject);
+            }
             //封装返回结果
             return buildResult(originFilename, file, uploadPath, imageInfo);
 
@@ -74,6 +85,29 @@ public abstract class PictureUploadTemplate {
         }finally {
             this.deleteTempFile(file);
         }
+    }
+
+    /**
+     * 构建图片压缩后的返回结果
+     * @param originFilename
+     * @param compressCiObject
+     * @return
+     */
+    private UploadPictureResult buildResult(String originFilename, CIObject compressCiObject) {
+        UploadPictureResult uploadPictureResult = new UploadPictureResult();
+        //计算宽高比
+        int picWidth = compressCiObject.getWidth();
+        int picHeight = compressCiObject.getHeight();
+        double picScale = NumberUtil.round(picWidth *1.0 / picHeight,2).doubleValue();
+        uploadPictureResult.setPicName(FileUtil.mainName(originFilename));
+        uploadPictureResult.setPicWidth(picWidth);
+        uploadPictureResult.setPicHeight(picHeight);
+        uploadPictureResult.setPicScale(picScale);
+        uploadPictureResult.setPicFormat(compressCiObject.getFormat());
+        uploadPictureResult.setPicSize(compressCiObject.getSize().longValue());
+        //设置图片压缩后的地址
+        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + compressCiObject.getKey());
+        return uploadPictureResult;
     }
 
     /**

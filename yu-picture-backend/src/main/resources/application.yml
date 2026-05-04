@@ -12,6 +12,11 @@ spring:
     url: ${sr.datasource.url}
     username: ${sr.datasource.username}
     password: ${sr.datasource.password}
+  redis:
+    database: 0
+    host: ${sr.redis.host}
+    port: ${sr.redis.port}
+    timeout: 5000
   servlet:
     multipart:
       max-file-size: 10MB

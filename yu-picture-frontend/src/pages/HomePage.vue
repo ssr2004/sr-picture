@@ -163,8 +163,35 @@ const getTagCategoryOptions = async () => {
   }
 }
 
+/**
+  warn：因为主页最后一列有空位，下面代码是新增的，  updatePageSize()
+  fetchData()以及window计算！！！！！
+ */
+const getCurrentColumns = () => {
+  const width = window.innerWidth
+  if (width < 576) return 1
+  if (width < 768) return 2
+  if (width < 992) return 3
+  if (width < 1200) return 4
+  if (width < 1600) return 5
+  return 6
+}
+const updatePageSize = () => {
+  const cols = getCurrentColumns()
+  searchParams.pageSize = cols * 3
+}
+window.addEventListener('resize', () => {
+  const oldPageSize = searchParams.pageSize
+  updatePageSize()
+  if (searchParams.pageSize !== oldPageSize) {
+    fetchData()
+  }
+})
+
 onMounted(() => {
   getTagCategoryOptions()
+  updatePageSize()
+  fetchData()
 })
 </script>
 
