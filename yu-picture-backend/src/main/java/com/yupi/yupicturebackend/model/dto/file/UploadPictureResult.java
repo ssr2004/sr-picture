@@ -3,7 +3,7 @@ package com.yupi.yupicturebackend.model.dto.file;
 import lombok.Data;
 
 /**
- * 图片解析信息请求封装类
+ * 图片解析信息封装类
  */
 @Data
 public class UploadPictureResult {
@@ -12,6 +12,11 @@ public class UploadPictureResult {
      * 图片url
      */
     private String url;
+
+    /**
+     * 缩略图url
+     */
+    private String thumbnailUrl;
 
     /**
      * 图片名称
