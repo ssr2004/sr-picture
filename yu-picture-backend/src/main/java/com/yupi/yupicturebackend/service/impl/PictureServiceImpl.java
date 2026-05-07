@@ -1,14 +1,17 @@
 package com.yupi.yupicturebackend.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yupi.yupicturebackend.config.CosClientConfig;
 import com.yupi.yupicturebackend.exception.BusinessException;
 import com.yupi.yupicturebackend.exception.ErrorCode;
 import com.yupi.yupicturebackend.exception.ThrowUtils;
+import com.yupi.yupicturebackend.manager.CosManager;
 import com.yupi.yupicturebackend.manager.FileManager;
 import com.yupi.yupicturebackend.manager.upload.FIlePictureUpload;
 import com.yupi.yupicturebackend.manager.upload.PictureUploadTemplate;
@@ -32,8 +35,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -65,6 +68,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
     @Resource
     private UrlPictureUpload urlPictureUpload;
+    @Resource
+    private CosManager cosManager;
+    @Resource
+    private CosClientConfig cosClientConfig;
 
     /**
      * 图片上传
@@ -76,8 +83,11 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     @Override
     public PictureVO uploadPicture(Object inputSource, PictureUploadRequest pictureUploadRequest, User loginUser) {
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
+        //TODO 更新图片时要清理老图片以及删除图片时存储桶内的图片没有删除
         //用于判断是新增还是更新图片
         Long pictureId = null;
+//        //获取旧图片信息，以供后续清理
+//        Picture oldPicture = new Picture();
         if(pictureUploadRequest != null){
             pictureId = pictureUploadRequest.getId();
         }
@@ -86,7 +96,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             Picture oldPicture = this.getById(pictureId);
             ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR,"图片不存在");
             //仅本人和管理员可编辑
-            if(!oldPicture.getUserId().equals(loginUser.getId()) || !userService.isAdmin(loginUser)){
+            if(!oldPicture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)){
                 throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
             }
 //            boolean exists = this.lambdaQuery().eq(Picture::getId,pictureId).exists();
@@ -123,8 +133,13 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             //如果是更新，需要补充 id 和编辑时间
             picture.setId(pictureId);
             picture.setEditTime(new Date());
+
         }
         boolean result = this.saveOrUpdate(picture);
+//        //清理旧图片
+//        if(oldPicture != null){
+//            this.clearPictureFile(oldPicture);
+//        }
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR,"图片上传失败");
         return PictureVO.objToVo(picture);
     }
@@ -381,7 +396,52 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         return uploadCount;
     }
 
+    /**
+     * 清理图片文件
+     * @param oldPicture
+     */
+    @Async
+    @Override
+    public void clearPictureFile(Picture oldPicture){
+        //判断是否被多条记录使用
+        String pictureUrl = oldPicture.getUrl();
+        long count = this.lambdaQuery()
+                .eq(Picture::getUrl, pictureUrl)
+                .count();
+        //有不止一条记录使用，不清理
+        if(count > 1){
+            return;
+        }
+        String thumbnailUrl = oldPicture.getThumbnailUrl();
+        //
+        String oldPictureUrl = oldPicture.getUrl();
+        String oldPictureUrltoKey = getKeyFromUrl(oldPictureUrl);
+
+        cosManager.deleteObject(oldPictureUrltoKey);
+        //清理缩略图
+        if(StrUtil.isNotBlank(thumbnailUrl)){
+            cosManager.deleteObject(getKeyFromUrl(thumbnailUrl));
+            //删除原图
+            String originKey = FileUtil.mainName(oldPictureUrltoKey) + "." + FileUtil.getSuffix(getKeyFromUrl(thumbnailUrl));
+            cosManager.deleteObject(originKey);
+        }
+    }
+
+    /**
+     * 获取图片的key
+     * @param url
+     * @return
+     */
+    @Override
+    public String getKeyFromUrl(String url) {
+        String host = cosClientConfig.getHost();
+        if (StrUtil.isNotBlank(host) && url.startsWith(host)) {
+            return url.substring(host.length() + 1); // +1 去掉开头的 "/"
+        }
+        return url;
+    }
 }
+
 
 
 
