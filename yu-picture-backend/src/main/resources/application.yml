@@ -2,6 +2,10 @@ server:
   port: 8123
   servlet:
     context-path: /api
+    #cookie30天过期
+    session:
+      cookie:
+        max-age: 2592000
 spring:
   application:
     name: yu-picture-backend
@@ -17,6 +21,11 @@ spring:
     host: ${sr.redis.host}
     port: ${sr.redis.port}
     timeout: 5000
+  #session配置
+  session:
+    store-type: redis
+    #30天过期
+    timeout: 2592000
   servlet:
     multipart:
       max-file-size: 10MB
