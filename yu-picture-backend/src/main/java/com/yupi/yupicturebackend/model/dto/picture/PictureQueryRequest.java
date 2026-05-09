@@ -1,6 +1,7 @@
 package com.yupi.yupicturebackend.model.dto.picture;
 
 import com.yupi.yupicturebackend.common.PageRequest;
+import io.lettuce.core.LPosArgs;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -76,6 +77,16 @@ public class PictureQueryRequest extends PageRequest implements Serializable {
      * 用户id
      */
     private Long userId;
+
+    /**
+     * 所属空间id
+     */
+    private Long spaceId;
+
+    /**
+     * 是否只查询 spaceId 为 null 的图片
+     */
+    private boolean nullSpaceId;
 
     /**
      * 审核状态：0-待审核，1-通过，2-拒绝
