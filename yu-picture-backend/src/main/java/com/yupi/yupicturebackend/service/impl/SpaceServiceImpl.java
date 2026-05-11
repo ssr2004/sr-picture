@@ -141,10 +141,10 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
             return queryWrapper;
         }
         //从对象中取值
-        long id = spaceQueryRequest.getId();
-        long userId = spaceQueryRequest.getUserId();
+        Long id = spaceQueryRequest.getId();
+        Long userId = spaceQueryRequest.getUserId();
         String spaceName = spaceQueryRequest.getSpaceName();
-        long spaceLevel = spaceQueryRequest.getSpaceLevel();
+        Integer spaceLevel = spaceQueryRequest.getSpaceLevel();
         String sortField = spaceQueryRequest.getSortField();
         String sortOrder = spaceQueryRequest.getSortOrder();
 

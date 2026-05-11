@@ -44,6 +44,8 @@
       </a-form-item>
     </a-form>
 
+    <div style="margin-bottom: 16px" />
+
     <a-table
       :columns="columns"
       :data-source="dataList"
@@ -191,6 +193,7 @@ const searchParms = reactive<API.PictureQueryRequest>({
 const fetchData = async () => {
   const res = await listPictureByPageUsingPost({
     ...searchParms,
+    nullSpaceId: true,
   })
   if (res.data.data) {
     dataList.value = res.data.data.records ?? []
