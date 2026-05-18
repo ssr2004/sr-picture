@@ -52,7 +52,7 @@ public class UrlPictureUpload extends PictureUploadTemplate {
                 return;
             }
             //4、校验文件类型
-            String contentType = response.header("Content_Type");
+            String contentType = response.header("Content-Type");
             if (StrUtil.isNotBlank(contentType)) {
                 //允许的图片类型
                 final List<String> ALLOW_CONTENT_TYPES = Arrays.asList("image/jpeg", "image/png", "image/jpg", "image/webp");
@@ -85,7 +85,12 @@ public class UrlPictureUpload extends PictureUploadTemplate {
     @Override
     protected String getOriginFilename(Object inputSource) {
         String fileUrl = (String) inputSource;
-        return FileUtil.mainName(fileUrl);
+        try {
+            URL url = new URL(fileUrl);
+            return FileUtil.getName(url.getPath());
+        } catch (MalformedURLException e) {
+            return FileUtil.getName(fileUrl);
+        }
     }
 
     /**
@@ -97,6 +102,13 @@ public class UrlPictureUpload extends PictureUploadTemplate {
     @Override
     protected void processFile(Object inputSource, File file) throws Exception {
         String fileUrl = (String) inputSource;
-        HttpUtil.downloadFile(fileUrl, file);
+        log.info("开始下载文件：{}", fileUrl);
+        try {
+            HttpUtil.downloadFile(fileUrl, file);
+        } catch (Exception e) {
+            log.error("文件下载失败：{}", fileUrl, e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件下载失败：" + e.getMessage());
+        }
+        log.info("文件下载成功，大小：{} bytes", file.length());
     }
 }

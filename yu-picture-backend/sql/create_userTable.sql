@@ -82,3 +82,6 @@ create table if not exists space
 alter table picture add column spaceId bigint null comment '空间id,（null）表示为公共空间';
 -- 添加索引
 create index idx_spaceId on picture (spaceId);
+
+-- 添加色调字段
+alter table picture add column picColor varchar(16) null comment '图片主色调';

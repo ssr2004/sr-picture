@@ -24,3 +24,12 @@ export function downloadImage(url?: string, filename?: string) {
     }
     saveAs(url, filename)
 }
+
+export function toHexColor(input) {
+    //去掉0x前缀
+    const colorValue = input.startsWith('0x') ? input.slice(2) : input
+
+    const hexColor = parseInt(colorValue, 16).toString(16).padStart(6, '0')
+
+    return `#${hexColor}`
+}

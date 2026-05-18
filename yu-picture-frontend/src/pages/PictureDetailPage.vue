@@ -32,6 +32,19 @@
             <a-descriptions-item label="大小">{{
               formatSize(picture.picSize)
             }}</a-descriptions-item>
+            <a-descriptions-item label="主色调">
+              <a-space>
+                {{ picture.picColor ?? '-' }}
+                <div
+                  v-if="picture.picColor"
+                  :style="{
+                    backgroundColor: toHexColor(picture.picColor),
+                    width: '16px',
+                    height: '16px',
+                  }"
+                />
+              </a-space>
+            </a-descriptions-item>
           </a-descriptions>
         </a-card>
         <a-space wrap>
@@ -53,20 +66,33 @@
               <DeleteOutlined />
             </template>
           </a-button>
+          <a-button type="primary" ghost @click="doShare"
+            >分享
+            <template #icon>
+              <share-alt-outlined />
+            </template>
+          </a-button>
         </a-space>
       </a-col>
     </a-row>
+    <ShareModel ref="shareModelRef" title="分享图片" :link="shareLink" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController'
-import { formatSize, downloadImage } from '@/utils'
+import { formatSize, downloadImage, toHexColor } from '@/utils'
 import { computed, onMounted, ref } from 'vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { EditOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons-vue'
+import ShareModel from '@/components/ShareModel.vue'
+import {
+  EditOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+  ShareAltOutlined,
+} from '@ant-design/icons-vue'
 
 const props = defineProps<{
   id: string | number
@@ -137,6 +163,19 @@ const doDelete = async () => {
 //下载
 const doDownload = () => {
   downloadImage(picture.value.url)
+}
+
+//分享弹窗引用
+const shareModelRef = ref()
+//分享链接
+const shareLink = ref<string>('')
+
+//分享
+const doShare = () => {
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.value.id}`
+  if (shareModelRef.value) {
+    shareModelRef.value.openModel()
+  }
 }
 </script>
 

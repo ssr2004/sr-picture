@@ -68,6 +68,12 @@
             <artifactId>jsoup</artifactId>
             <version>1.15.3</version>
         </dependency>
+<!--        &lt;!&ndash;HtmlUnit 纯Java无头浏览器&ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>net.sourceforge.htmlunit</groupId>-->
+<!--            <artifactId>htmlunit</artifactId>-->
+<!--            <version>2.70.0</version>-->
+<!--        </dependency>-->
         <!--接口文档生成 https://doc.xiaominfo.com/docs/quick-start-->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>

@@ -59,3 +59,6 @@ cos:
     secretKey: ${sr.client.secretKey}
     region: ${sr.client.region}
     bucket: ${sr.client.bucket}
+#阿里云ai配置
+aliYunAi:
+  apiKey: ${sr.aliYunAi.apiKey}

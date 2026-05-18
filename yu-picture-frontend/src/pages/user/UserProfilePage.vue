@@ -15,6 +15,22 @@
           <a-input v-model:value="formState.userName" placeholder="请输入昵称" allow-clear />
         </a-form-item>
 
+        <a-form-item label="头像">
+          <a-flex align="center" :gap="16">
+            <a-avatar :size="72" :src="formState.userAvatar" />
+            <a-upload
+              :show-upload-list="false"
+              :custom-request="handleAvatarUpload"
+              :before-upload="beforeAvatarUpload"
+            >
+              <a-button :loading="avatarLoading">
+                <upload-outlined />
+                上传新头像
+              </a-button>
+            </a-upload>
+          </a-flex>
+        </a-form-item>
+
         <a-form-item label="头像地址" name="userAvatar">
           <a-input v-model:value="formState.userAvatar" placeholder="请输入头像 URL" allow-clear />
         </a-form-item>
@@ -40,10 +56,12 @@
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
-import { message } from 'ant-design-vue'
+import { message, type UploadProps } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { updateMyUserUsingPost } from '@/api/userController'
+import { uploadPictureUsingPost } from '@/api/pictureController'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
+import { UploadOutlined } from '@ant-design/icons-vue'
 
 type ProfileFormState = {
   userAccount: string
@@ -58,6 +76,36 @@ const router = useRouter()
 
 const loading = ref(false)
 const submitting = ref(false)
+const avatarLoading = ref(false)
+
+const beforeAvatarUpload = (file: UploadProps['fileList'][number]) => {
+  const isImage = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp'
+  if (!isImage) {
+    message.error('不支持上传该格式图片，推荐 jpg、png 或 webp')
+  }
+  const isLt2M = file.size / 1024 / 1024 < 2
+  if (!isLt2M) {
+    message.error('不能上传超过 2M 的图片')
+  }
+  return isImage && isLt2M
+}
+
+const handleAvatarUpload = async ({ file }: any) => {
+  avatarLoading.value = true
+  try {
+    const res = await uploadPictureUsingPost({}, {}, file)
+    if (res.data.code === 0 && res.data.data) {
+      formState.userAvatar = res.data.data.url ?? ''
+      message.success('头像上传成功')
+    } else {
+      message.error('头像上传失败：' + res.data.message)
+    }
+  } catch {
+    message.error('头像上传失败')
+  } finally {
+    avatarLoading.value = false
+  }
+}
 
 const originalProfile = ref({
   userName: '',
