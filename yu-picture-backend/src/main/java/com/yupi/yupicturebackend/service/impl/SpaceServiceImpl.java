@@ -224,6 +224,18 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
             return Optional.ofNullable(newSpaceId).orElse(-1L);
         }
     }
+
+    /**
+     * 校验空间权限
+     * @param loginUser
+     * @param space
+     */
+    @Override
+    public void checkSpaceAuth(User loginUser, Space space) {
+        if(!space.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+    }
 }
 
 
