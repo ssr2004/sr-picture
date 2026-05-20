@@ -60,7 +60,7 @@
               <EditOutlined />
             </template>
           </a-button>
-          <a-button v-if="canEdit" danger @click="doDelete"
+          <a-button v-if="canDelete" danger @click="doDelete"
             >删除
             <template #icon>
               <DeleteOutlined />
@@ -93,6 +93,7 @@ import {
   DownloadOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons-vue'
+import { SPACE_PERMISSION_ENUM } from '@/constants/space'
 
 const props = defineProps<{
   id: string | number
@@ -122,17 +123,16 @@ onMounted(() => {
 
 const loginUserStore = useLoginUserStore()
 
-//是否有编辑权限
-const canEdit = computed(() => {
-  const loginUser = loginUserStore.loginUser
-  //未登录不可编辑
-  if (!loginUser.id) {
-    return false
-  }
-  //仅本人或管理员可编辑
-  const user = picture.value.user || {}
-  return loginUser.id === user.id || loginUser.userRole === 'admin'
-})
+// 通用权限检查函数
+function createPermissionChecker(permission: string) {
+  return computed(() => {
+    return (picture.value.permissionList ?? []).includes(permission)
+  })
+}
+
+// 定义权限检查
+const canEdit = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
+const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 
 const router = useRouter()
 //编辑

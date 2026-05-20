@@ -26,6 +26,7 @@ const checkUserSpace = async () => {
     current: 1,
     pageSize: 1,
     userId: loginUser.id,
+    spaceType: 0,
   })
   if (res.data.code === 0) {
     if (res.data.data?.records?.length > 0) {

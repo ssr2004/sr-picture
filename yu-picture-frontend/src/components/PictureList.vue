@@ -31,8 +31,8 @@
             </a-card-meta>
             <template v-if="showOp" #actions>
               <share-alt-outlined @click="(e) => doShare(picture, e)" />
-              <edit-outlined @click="(e) => doEdit(picture, e)" />
-              <delete-outlined @click="(e) => doDelete(picture, e)" />
+              <edit-outlined v-if="canEdit" @click="(e) => doEdit(picture, e)" />
+              <delete-outlined v-if="canDelete" @click="(e) => doDelete(picture, e)" />
             </template>
           </a-card>
         </a-list-item>
@@ -54,12 +54,16 @@ interface Props {
   dataList?: API.PictureVO[]
   loading?: boolean
   showOp?: boolean
+  canEdit?: boolean
+  canDelete?: boolean
   onReload?: () => void
 }
 const props = withDefaults(defineProps<Props>(), {
   dataList: () => [],
   loading: false,
   showOp: false,
+  canEdit: false,
+  canDelete: false,
 })
 //跳转至图片详情
 const router = useRouter()

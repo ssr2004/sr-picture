@@ -3,6 +3,9 @@ package com.yupi.yupicturebackend.model.enums;
 import cn.hutool.core.util.ObjUtil;
 import lombok.Getter;
 
+/**
+ * 图片审核枚举类
+ */
 @Getter
 public enum PictureReviewStatusEnum {
 
