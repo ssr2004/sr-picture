@@ -20,7 +20,7 @@ import com.tuque.srpicturebackend.exception.ErrorCode;
 import com.tuque.srpicturebackend.exception.ThrowUtils;
 import com.tuque.srpicturebackend.manager.CosManager;
 import com.tuque.srpicturebackend.manager.FileManager;
-import com.tuque.srpicturebackend.manager.upload.FIlePictureUpload;
+import com.tuque.srpicturebackend.manager.upload.FilePictureUpload;
 import com.tuque.srpicturebackend.manager.upload.PictureUploadTemplate;
 import com.tuque.srpicturebackend.manager.upload.UrlPictureUpload;
 import com.tuque.srpicturebackend.model.dto.picture.*;
@@ -76,7 +76,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     private SpaceService spaceService;
 
     @Resource
-    private FIlePictureUpload filepictureUpload;
+    private FilePictureUpload filepictureUpload;
 
     @Resource
     private UrlPictureUpload urlPictureUpload;

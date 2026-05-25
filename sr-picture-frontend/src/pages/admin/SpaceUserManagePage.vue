@@ -3,22 +3,30 @@
     <a-flex justify="space-between">
       <h2>空间成员管理</h2>
       <a-space>
-        <a-button type="primary" href="/add_space" target="_blank">+ 创建空间</a-button>
-        <a-button type="primary" ghost href="/space_analyze?queryPublic=1" target="_blank">
+        <a-button type="primary" @click="router.push('/add_space')">+ 创建空间</a-button>
+        <a-button type="primary" ghost @click="router.push('/space_analyze?queryPublic=1')">
           分析公共图库
         </a-button>
-        <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank">
+        <a-button type="primary" ghost @click="router.push('/space_analyze?queryAll=1')">
           分析全空间
         </a-button>
       </a-space>
     </a-flex>
     <div style="margin-bottom: 16px" />
     <a-form layout="inline" :model="formData" @finish="handleSubmit">
-      <a-form-item label="用户 id" name="userId">
-        <a-input v-model:value="formData.userId" placeholder="请输入用户 id" allow-clear />
+      <a-form-item label="搜索用户" name="userId">
+        <a-auto-complete
+          v-model:value="searchValue"
+          :options="userOptions"
+          placeholder="输入用户名或账号搜索"
+          style="width: 280px"
+          @search="onSearch"
+          @select="onSelect"
+          allow-clear
+        />
       </a-form-item>
       <a-form-item>
-        <a-button type="primary" html-type="submit">添加用户</a-button>
+        <a-button type="primary" html-type="submit" :disabled="!formData.userId">添加用户</a-button>
       </a-form-item>
     </a-form>
     <div style="margin-bottom: 16px" />
@@ -58,10 +66,14 @@ import {
   editSpaceUserUsingPost,
   listSpaceUserUsingPost,
 } from '@/api/spaceUserController'
+import { searchUsersUsingGet } from '@/api/userController'
 import { SPACE_ROLE_OPTIONS } from '@/constants/space'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 // 表格列
 const columns = [
@@ -142,6 +154,31 @@ const doDelete = async (id: string) => {
 
 // 添加用户
 const formData = reactive<API.SpaceUserAddRequest>({})
+const searchValue = ref<string>('')
+const userOptions = ref<{ value: string; label: string; userId: number }[]>([])
+
+let searchTimer: any = null
+const onSearch = (keyword: string) => {
+  if (searchTimer) clearTimeout(searchTimer)
+  if (!keyword || keyword.length < 2) {
+    userOptions.value = []
+    return
+  }
+  searchTimer = setTimeout(async () => {
+    const res = await searchUsersUsingGet({ keyword })
+    if (res.data.code === 0 && res.data.data) {
+      userOptions.value = res.data.data.map((user: API.UserVO) => ({
+        value: user.userName + ' (' + user.userAccount + ')',
+        label: user.userName + ' (' + user.userAccount + ')',
+        userId: user.id,
+      }))
+    }
+  }, 300)
+}
+
+const onSelect = (_value: string, option: any) => {
+  formData.userId = option.userId
+}
 
 const handleSubmit = async () => {
   const spaceId = props.id
@@ -154,6 +191,10 @@ const handleSubmit = async () => {
   })
   if (res.data.code === 0) {
     message.success('添加成功')
+    // 清空搜索状态
+    searchValue.value = ''
+    formData.userId = undefined
+    userOptions.value = []
     // 刷新数据
     fetchData()
   } else {

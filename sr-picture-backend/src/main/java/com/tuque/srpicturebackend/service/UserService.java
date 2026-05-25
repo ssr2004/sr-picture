@@ -108,4 +108,11 @@ public interface UserService extends IService<User> {
      * @return
      */
     boolean isAdmin(User user);
+
+    /**
+     * 搜索用户（按账号或用户名模糊匹配）
+     * @param keyword
+     * @return
+     */
+    List<UserVO> searchUsers(String keyword);
 }

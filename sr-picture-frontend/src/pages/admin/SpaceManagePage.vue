@@ -3,11 +3,11 @@
     <a-flex justify="space-between">
       <h2>空间管理</h2>
       <a-space>
-        <a-button type="primary" href="/add_space" target="_blank">+ 创建空间</a-button>
-        <a-button type="primary" ghost href="/space_analyze?queryPublic=1" target="_blank">
+        <a-button type="primary" @click="router.push('/add_space')">+ 创建空间</a-button>
+        <a-button type="primary" ghost @click="router.push('/space_analyze?queryPublic=1')">
           分析公共图库
         </a-button>
-        <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank">
+        <a-button type="primary" ghost @click="router.push('/space_analyze?queryAll=1')">
           分析全空间
         </a-button>
       </a-space>
@@ -72,10 +72,10 @@
         </template>
         <template v-else-if="column.key === 'action'">
           <a-space wrap>
-            <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank">
+            <a-button type="link" @click="router.push(`/space_analyze?spaceId=${record.id}`)">
               分析
             </a-button>
-            <a-button type="link" :href="`/add_space?id=${record.id}`" target="_blank">
+            <a-button type="link" @click="router.push(`/add_space?id=${record.id}`)">
               编辑
             </a-button>
             <a-button type="link" danger @click="doDelete(record.id)"> 删除 </a-button>
@@ -90,10 +90,13 @@
 import { deleteSpaceUsingPost, listSpaceByPageUsingPost } from '@/api/SpaceController'
 import { message } from 'ant-design-vue'
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import dayjs from 'dayjs'
 import { SPACE_LEVEL_MAP, SPACE_LEVEL_OPTIONS, SPACE_TYPE_MAP } from '@/constants/space'
 import { formatSize } from '@/utils'
 import { SPACE_TYPE_OPTIONS } from '@/constants/space'
+
+const router = useRouter()
 
 const columns = [
   {

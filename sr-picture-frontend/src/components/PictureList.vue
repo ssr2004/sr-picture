@@ -1,45 +1,43 @@
 <template>
-  <div class="picture-list">
-    <a-list
-      :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
-      :data-source="dataList"
-      :loading="loading"
+  <div class="picture-list" v-if="dataList.length > 0">
+    <div
+      v-for="picture in dataList"
+      :key="picture.id"
+      class="picture-card"
+      @click="doClickPicture(picture)"
     >
-      <template #renderItem="{ item: picture }">
-        <a-list-item style="padding: 0">
-          <!-- 单张图片 -->
-          <a-card hoverable @click="doClickPicture(picture)">
-            <template #cover>
-              <img
-                style="height: 180px; object-fit: cover"
-                :alt="picture.name"
-                :src="picture.thumbnailUrl ?? picture.url"
-                loading="lazy"
-              />
+      <a-card hoverable>
+        <template #cover>
+          <img
+            :alt="picture.name"
+            :src="picture.thumbnailUrl ?? picture.url"
+            loading="lazy"
+          />
+        </template>
+        <div class="card-info">
+          <a-card-meta :title="picture.name">
+            <template #description>
+              <a-flex>
+                <a-tag color="green">
+                  {{ picture.category ?? '默认' }}
+                </a-tag>
+                <a-tag v-for="tag in picture.tags" :key="tag">
+                  {{ tag }}
+                </a-tag>
+              </a-flex>
             </template>
-            <a-card-meta :title="picture.name">
-              <template #description>
-                <a-flex>
-                  <a-tag color="green">
-                    {{ picture.category ?? '默认' }}
-                  </a-tag>
-                  <a-tag v-for="tag in picture.tags" :key="tag">
-                    {{ tag }}
-                  </a-tag>
-                </a-flex>
-              </template>
-            </a-card-meta>
-            <template v-if="showOp" #actions>
-              <share-alt-outlined @click="(e) => doShare(picture, e)" />
-              <edit-outlined v-if="canEdit" @click="(e) => doEdit(picture, e)" />
-              <delete-outlined v-if="canDelete" @click="(e) => doDelete(picture, e)" />
-            </template>
-          </a-card>
-        </a-list-item>
-      </template>
-    </a-list>
-    <ShareModel ref="shareModelRef" :link="shareLink" />
+          </a-card-meta>
+        </div>
+        <template v-if="showOp" #actions>
+          <share-alt-outlined @click="(e) => doShare(picture, e)" />
+          <edit-outlined v-if="canEdit" @click="(e) => doEdit(picture, e)" />
+          <delete-outlined v-if="canDelete" @click="(e) => doDelete(picture, e)" />
+        </template>
+      </a-card>
+    </div>
   </div>
+  <a-empty v-else-if="!loading" description="暂无图片" />
+  <ShareModel ref="shareModelRef" :link="shareLink" />
 </template>
 
 <script setup lang="ts">
@@ -67,14 +65,14 @@ const props = withDefaults(defineProps<Props>(), {
 })
 //跳转至图片详情
 const router = useRouter()
-const doClickPicture = (picture) => {
+const doClickPicture = (picture: API.PictureVO) => {
   router.push({
     path: `/picture/${picture.id}`,
   })
 }
 
 //编辑
-const doEdit = (picture, e) => {
+const doEdit = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   router.push({
     path: '/add_picture',
@@ -86,7 +84,7 @@ const doEdit = (picture, e) => {
 }
 
 //删除
-const doDelete = async (picture, e) => {
+const doDelete = async (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   const id = picture.id
   if (!id) {
@@ -117,4 +115,57 @@ const doShare = (picture: API.PictureVO, e: Event) => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.picture-list {
+  column-count: 5;
+  column-gap: 16px;
+}
+
+@media (max-width: 1600px) {
+  .picture-list {
+    column-count: 4;
+  }
+}
+
+@media (max-width: 1200px) {
+  .picture-list {
+    column-count: 3;
+  }
+}
+
+@media (max-width: 992px) {
+  .picture-list {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 576px) {
+  .picture-list {
+    column-count: 1;
+  }
+}
+
+.picture-card {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.picture-card :deep(.ant-card:hover) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.picture-card :deep(.ant-card-cover img) {
+  width: 100%;
+  display: block;
+}
+
+.picture-card .card-info {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.picture-card:hover .card-info {
+  opacity: 1;
+}
+</style>

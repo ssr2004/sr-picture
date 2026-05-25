@@ -1,5 +1,6 @@
 package com.tuque.srpicturebackend.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tuque.srpicturebackend.annotation.AuthCheck;
@@ -211,6 +212,18 @@ public class UserController {
         List<UserVO> userVOList = userService.getUserVOList(userPage.getRecords());
         userVOPage.setRecords(userVOList);
         return ResultUtils.success(userVOPage);
+    }
+
+    /**
+     * 搜索用户（按账号或用户名模糊匹配）
+     * @param keyword
+     * @return
+     */
+    @GetMapping("/search")
+    public BaseResponse<List<UserVO>> searchUsers(@RequestParam String keyword) {
+        ThrowUtils.throwIf(StrUtil.isBlank(keyword), ErrorCode.PARAMS_ERROR);
+        List<UserVO> userList = userService.searchUsers(keyword);
+        return ResultUtils.success(userList);
     }
 
 }

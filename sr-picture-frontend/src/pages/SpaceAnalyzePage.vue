@@ -5,7 +5,7 @@
       <span v-if="queryAll"> 全部空间 </span>
       <span v-else-if="queryPublic"> 公共图库 </span>
       <span v-else>
-        <a :href="`/space/${spaceId}`" target="_blank">id：{{ spaceId }}</a>
+        <a @click.prevent="router.push(`/space/${spaceId}`)">id：{{ spaceId }}</a>
       </span>
     </h2>
     <a-row :gutter="[16, 16]">
@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import SpaceUsageAnalyze from '@/components/analyze/SpaceUsageAnalyze.vue'
 import SpaceCategoryAnalyze from '@/components/analyze/SpaceCategoryAnalyze.vue'
 import SpaceTagAnalyze from '@/components/analyze/SpaceTagAnalyze.vue'
@@ -54,6 +54,7 @@ import SpaceUserAnalyze from '@/components/analyze/SpaceUserAnalyze.vue'
 import SpaceRankAnalyze from '@/components/analyze/SpaceRankAnalyze.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 // 空间 id
 const spaceId = computed(() => {

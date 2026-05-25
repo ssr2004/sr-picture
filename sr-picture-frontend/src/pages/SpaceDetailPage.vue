@@ -7,8 +7,7 @@
         <a-button
           v-if="canUploadPicture"
           type="primary"
-          :href="`/add_picture?spaceId=${id}`"
-          target="_blank"
+          @click="router.push(`/add_picture?spaceId=${id}`)"
         >
           + 创建图片
         </a-button>
@@ -17,8 +16,7 @@
           type="primary"
           ghost
           :icon="h(TeamOutlined)"
-          :href="`/spaceUserManage/${id}`"
-          target="_blank"
+          @click="router.push(`/spaceUserManage/${id}`)"
         >
           成员管理
         </a-button>
@@ -27,8 +25,7 @@
           type="primary"
           ghost
           :icon="h(BarChartOutlined)"
-          :href="`/space_analyze?spaceId=${id}`"
-          target="_blank"
+          @click="router.push(`/space_analyze?spaceId=${id}`)"
         >
           空间分析
         </a-button>
@@ -92,6 +89,7 @@ import PictureSearchForm from '@/components/PictureSearchForm.vue'
 import { formatSize } from '@/utils'
 import { message } from 'ant-design-vue'
 import { computed, h, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { BarChartOutlined, EditOutlined, TeamOutlined } from '@ant-design/icons-vue'
 import { ColorPicker } from 'vue3-colorpicker'
 import 'vue3-colorpicker/style.css'
@@ -100,6 +98,7 @@ import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '@/constants/space'
 const props = defineProps<{
   id: string | number
 }>()
+const router = useRouter()
 const space = ref<API.SpaceVO>({})
 
 //获取空间详情

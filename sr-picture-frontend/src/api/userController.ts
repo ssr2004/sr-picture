@@ -164,3 +164,17 @@ export async function updateMyUserUsingPost(
     ...(options || {}),
   })
 }
+
+/** searchUsers GET /api/user/search */
+export async function searchUsersUsingGet(
+  params: { keyword: string },
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseListUserVO_>('/api/user/search', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  })
+}

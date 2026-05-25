@@ -4,7 +4,7 @@
       {{ route.query?.id ? '修改图片' : '创建图片' }}
     </h2>
     <a-typography-paragraph v-if="spaceId" type="secondary">
-      保存至空间：<a :href="`/space/${spaceId}`" target="_blank">{{ spaceId }}</a>
+      保存至空间：<a @click.prevent="router.push(`/space/${spaceId}`)">{{ spaceId }}</a>
     </a-typography-paragraph>
     <!-- 选择上传方式 -->
     <a-tabs v-model:activeKey="uploadType">

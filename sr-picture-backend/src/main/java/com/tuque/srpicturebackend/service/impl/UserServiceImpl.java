@@ -252,6 +252,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     /**
+     * 搜索用户（按账号或用户名模糊匹配）
+     * @param keyword
+     * @return
+     */
+    @Override
+    public List<UserVO> searchUsers(String keyword) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.and(wrapper ->
+                wrapper.like("userAccount", keyword)
+                        .or()
+                        .like("userName", keyword)
+        );
+        queryWrapper.last("LIMIT 10");
+        List<User> userList = this.list(queryWrapper);
+        return getUserVOList(userList);
+    }
+
+    /**
      * 用户更新个人信息（本人）
      * @param userUpdateSelfRequest
      * @param loginUser
