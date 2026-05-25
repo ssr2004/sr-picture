@@ -281,3 +281,15 @@ export async function uploadPictureByUrlUsingPost(
     ...(options || {}),
   })
 }
+
+/** recognizePictureTags POST /api/picture/recognize_tags */
+export async function recognizePictureTagsUsingPost(
+  params: { imageUrl: string },
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseMapStringObject_>('/api/picture/recognize_tags', {
+    method: 'POST',
+    params: params,
+    ...(options || {}),
+  })
+}

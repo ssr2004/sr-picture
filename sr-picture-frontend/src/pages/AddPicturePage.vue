@@ -86,6 +86,7 @@ import {
   editPictureUsingPost,
   getPictureVoByIdUsingGet,
   listPictureTagCategoryUsingGet,
+  recognizePictureTagsUsingPost,
 } from '@/api/pictureController'
 import PictureUpload from '@/components/PictureUpload.vue'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
@@ -99,9 +100,28 @@ import { getSpaceVoByIdUsingGet } from '@/api/spaceController'
 
 const picture = ref<API.PictureVO>()
 const pictureForm = reactive<API.PictureEditRequest>({})
-const onSuccess = (newPicture: API.PictureVO) => {
+const onSuccess = async (newPicture: API.PictureVO) => {
   picture.value = newPicture
   pictureForm.name = newPicture.name
+  // AI 识别标签和分类
+  if (newPicture.url) {
+    try {
+      const res = await recognizePictureTagsUsingPost({ imageUrl: newPicture.url })
+      if (res.data.code === 0 && res.data.data) {
+        const { tags, category } = res.data.data
+        if (tags && tags.length > 0) {
+          pictureForm.tags = tags
+        }
+        if (category) {
+          pictureForm.category = category
+        }
+        message.success('AI 已自动识别标签和分类')
+      }
+    } catch (e) {
+      // AI 识别失败不影响上传流程
+      console.error('AI 标签识别失败', e)
+    }
+  }
 }
 
 const uploadType = ref<'file' | 'url'>('file')

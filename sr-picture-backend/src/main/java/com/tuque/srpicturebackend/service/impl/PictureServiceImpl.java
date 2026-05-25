@@ -9,7 +9,9 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import cn.hutool.json.JSONObject;
 import com.tuque.srpicturebackend.api.aliyunai.AliYunAiApi;
+import com.tuque.srpicturebackend.constant.PictureConstant;
 import com.tuque.srpicturebackend.api.aliyunai.model.CreateOutPaintingTaskRequest;
 import com.tuque.srpicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.tuque.srpicturebackend.config.CosClientConfig;
@@ -205,6 +207,11 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 //        if(oldPicture != null){
 //            this.clearPictureFile(oldPicture);
 //        }
+
+        // 异步 AI 识别标签（仅新增时触发，更新时不覆盖用户手动设置）
+        if (pictureId == null) {
+            autoRecognizeTags(picture.getId(), picture.getUrl());
+        }
 
         return PictureVO.objToVo(picture);
     }
@@ -512,6 +519,79 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             return url.substring(host.length() + 1); // +1 去掉开头的 "/"
         }
         return url;
+    }
+
+    /**
+     * 异步 AI 识别图片标签和分类
+     * @param pictureId 图片 id
+     * @param imageUrl 图片 URL
+     */
+    @Async
+    public void autoRecognizeTags(Long pictureId, String imageUrl) {
+        try {
+            String result = aliYunAiApi.recognizePictureTag(imageUrl);
+            // 去除 AI 返回中的 markdown 代码块标记
+            result = result.trim();
+            if (result.startsWith("```")) {
+                result = result.replaceAll("```json\\s*", "").replaceAll("```\\s*", "").trim();
+            }
+            // 解析 AI 返回的 JSON
+            JSONObject jsonObject = JSONUtil.parseObj(result);
+            // 提取 tags
+            List<String> tags = jsonObject.getBeanList("tags", String.class);
+            // 提取 category
+            String category = jsonObject.getStr("category");
+            // 校验标签是否在预定义列表中
+            if (tags != null) {
+                tags.retainAll(PictureConstant.TAG_LIST);
+            }
+            // 校验分类是否在预定义列表中
+            if (category != null && !PictureConstant.CATEGORY_LIST.contains(category)) {
+                category = null;
+            }
+            // 更新数据库
+            this.lambdaUpdate()
+                    .eq(Picture::getId, pictureId)
+                    .set(tags != null && !tags.isEmpty(), Picture::getTags, JSONUtil.toJsonStr(tags))
+                    .set(StrUtil.isNotBlank(category), Picture::getCategory, category)
+                    .update();
+            log.info("AI 图片标签识别完成，pictureId: {}, tags: {}, category: {}", pictureId, tags, category);
+        } catch (Exception e) {
+            log.error("AI 图片标签识别失败，pictureId: {}", pictureId, e);
+        }
+    }
+
+    /**
+     * AI 识别图片标签和分类（同步，用于前端表单填充）
+     * @param imageUrl 图片 URL
+     * @return 包含 tags 和 category 的 Map
+     */
+    @Override
+    public Map<String, Object> recognizePictureTags(String imageUrl) {
+        String result = aliYunAiApi.recognizePictureTag(imageUrl);
+        // 去除 AI 返回中的 markdown 代码块标记
+        result = result.trim();
+        if (result.startsWith("```")) {
+            result = result.replaceAll("```json\\s*", "").replaceAll("```\\s*", "").trim();
+        }
+        // 解析 AI 返回的 JSON
+        JSONObject jsonObject = JSONUtil.parseObj(result);
+        // 提取 tags
+        List<String> tags = jsonObject.getBeanList("tags", String.class);
+        // 提取 category
+        String category = jsonObject.getStr("category");
+        // 校验标签是否在预定义列表中
+        if (tags != null) {
+            tags.retainAll(PictureConstant.TAG_LIST);
+        }
+        // 校验分类是否在预定义列表中
+        if (category != null && !PictureConstant.CATEGORY_LIST.contains(category)) {
+            category = null;
+        }
+        Map<String, Object> map = new java.util.HashMap<>();
+        map.put("tags", tags);
+        map.put("category", category);
+        return map;
     }
 
     /**

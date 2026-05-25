@@ -15,6 +15,7 @@ import com.tuque.srpicturebackend.api.imagesearch.sub.BingImageSearchApi;
 import com.tuque.srpicturebackend.common.BaseResponse;
 import com.tuque.srpicturebackend.common.DeleteRequest;
 import com.tuque.srpicturebackend.common.ResultUtils;
+import com.tuque.srpicturebackend.constant.PictureConstant;
 import com.tuque.srpicturebackend.constant.UserConstant;
 import com.tuque.srpicturebackend.exception.BusinessException;
 import com.tuque.srpicturebackend.exception.ErrorCode;
@@ -47,6 +48,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -109,6 +111,17 @@ public class PictureController {
         PictureVO pictureVO = pictureService.uploadPicture(fileUrl, pictureUploadRequest, loginUser);
         return ResultUtils.success(pictureVO);
     }
+
+    /**
+     * AI 识别图片标签和分类
+     */
+    @PostMapping("/recognize_tags")
+    public BaseResponse<Map<String, Object>> recognizePictureTags(@RequestParam String imageUrl) {
+        ThrowUtils.throwIf(StrUtil.isBlank(imageUrl), ErrorCode.PARAMS_ERROR);
+        Map<String, Object> result = pictureService.recognizePictureTags(imageUrl);
+        return ResultUtils.success(result);
+    }
+
     /**
      * 处理图片删除请求接口
      * @param deleteRequest
@@ -336,10 +349,8 @@ public class PictureController {
     @GetMapping("/tag_category")
     public BaseResponse<PictureTagCategory> listPictureTagCategory(){
         PictureTagCategory pictureTagCategory = new PictureTagCategory();
-        List<String> tagList = Arrays.asList("热门", "搞笑", "生活", "高清", "艺术", "校园", "背景", "简历", "创意");
-        List<String> categoryList = Arrays.asList("模板", "电商", "表情包", "素材", "海报");
-        pictureTagCategory.setTagList(tagList);
-        pictureTagCategory.setCategoryList(categoryList);
+        pictureTagCategory.setTagList(PictureConstant.TAG_LIST);
+        pictureTagCategory.setCategoryList(PictureConstant.CATEGORY_LIST);
         return ResultUtils.success(pictureTagCategory);
     }
 

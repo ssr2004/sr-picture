@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author songran
@@ -137,4 +138,11 @@ public interface PictureService extends IService<Picture> {
      * @return
      */
     CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
+
+    /**
+     * AI 识别图片标签和分类
+     * @param imageUrl 图片 URL
+     * @return 包含 tags 和 category 的 Map
+     */
+    Map<String, Object> recognizePictureTags(String imageUrl);
 }

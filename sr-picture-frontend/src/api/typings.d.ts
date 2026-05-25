@@ -131,6 +131,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseMapStringObject_ = {
+    code?: number
+    data?: Record<string, any>
+    message?: string
+  }
+
   type BaseResponseSpace_ = {
     code?: number
     data?: Space
