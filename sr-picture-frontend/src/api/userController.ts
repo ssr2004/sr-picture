@@ -135,6 +135,21 @@ export async function userRegisterUsingPost(
   })
 }
 
+/** searchUsers GET /api/user/search */
+export async function searchUsersUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.searchUsersUsingGETParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseListUserVO_>('/api/user/search', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  })
+}
+
 /** updateUser POST /api/user/update */
 export async function updateUserUsingPost(
   body: API.UserUpdateRequest,
@@ -161,20 +176,6 @@ export async function updateMyUserUsingPost(
       'Content-Type': 'application/json',
     },
     data: body,
-    ...(options || {}),
-  })
-}
-
-/** searchUsers GET /api/user/search */
-export async function searchUsersUsingGet(
-  params: { keyword: string },
-  options?: { [key: string]: any }
-) {
-  return request<API.BaseResponseListUserVO_>('/api/user/search', {
-    method: 'GET',
-    params: {
-      ...params,
-    },
     ...(options || {}),
   })
 }

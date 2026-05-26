@@ -158,6 +158,21 @@ export async function getPictureOutPaintingTaskUsingGet(
   )
 }
 
+/** recognizePictureTags POST /api/picture/recognize_tags */
+export async function recognizePictureTagsUsingPost(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.recognizePictureTagsUsingPOSTParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseMapStringObject_>('/api/picture/recognize_tags', {
+    method: 'POST',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  })
+}
+
 /** doPictureReview POST /api/picture/review */
 export async function doPictureReviewUsingPost(
   body: API.PictureReviewRequest,
@@ -278,18 +293,6 @@ export async function uploadPictureByUrlUsingPost(
       'Content-Type': 'application/json',
     },
     data: body,
-    ...(options || {}),
-  })
-}
-
-/** recognizePictureTags POST /api/picture/recognize_tags */
-export async function recognizePictureTagsUsingPost(
-  params: { imageUrl: string },
-  options?: { [key: string]: any }
-) {
-  return request<API.BaseResponseMapStringObject_>('/api/picture/recognize_tags', {
-    method: 'POST',
-    params: params,
     ...(options || {}),
   })
 }

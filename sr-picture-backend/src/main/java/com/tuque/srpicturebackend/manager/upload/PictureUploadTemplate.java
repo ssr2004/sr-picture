@@ -27,6 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -66,6 +68,8 @@ public abstract class PictureUploadTemplate {
             file = File.createTempFile(uploadPath, null);
             //处理文件来源（本地或URL）
             processFile(inputSource, file);
+            //校验文件魔数，确认是合法图片
+            validateFileMagic(file);
             //上传图片
             PutObjectResult putObjectResult = cosManager.putPictureObject(uploadPath, file);
             ImageInfo imageInfo = putObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
@@ -179,6 +183,43 @@ public abstract class PictureUploadTemplate {
             url = url.substring(0, url.length() - 1);
         }
         return url + "." + format.toLowerCase();
+    }
+
+    /**
+     * 校验文件魔数，确认是合法图片
+     * @param file
+     */
+    private void validateFileMagic(File file) {
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] header = new byte[12];
+            int read = fis.read(header);
+            ThrowUtils.throwIf(read < 3, ErrorCode.PARAMS_ERROR, "文件格式错误，非合法图片");
+
+            // JPEG: FF D8 FF
+            if ((header[0] & 0xFF) == 0xFF && (header[1] & 0xFF) == 0xD8 && (header[2] & 0xFF) == 0xFF) {
+                return;
+            }
+            // PNG: 89 50 4E 47 0D 0A 1A 0A
+            if ((header[0] & 0xFF) == 0x89 && (header[1] & 0xFF) == 0x50 && (header[2] & 0xFF) == 0x4E
+                    && (header[3] & 0xFF) == 0x47 && (header[4] & 0xFF) == 0x0D && (header[5] & 0xFF) == 0x0A
+                    && (header[6] & 0xFF) == 0x1A && (header[7] & 0xFF) == 0x0A) {
+                return;
+            }
+            // WebP: RIFF....WEBP
+            if (read >= 12 && (header[0] & 0xFF) == 0x52 && (header[1] & 0xFF) == 0x49
+                    && (header[2] & 0xFF) == 0x46 && (header[3] & 0xFF) == 0x46
+                    && (header[8] & 0xFF) == 0x57 && (header[9] & 0xFF) == 0x45
+                    && (header[10] & 0xFF) == 0x42 && (header[11] & 0xFF) == 0x50) {
+                return;
+            }
+
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件格式错误，非合法图片");
+        } catch (BusinessException e) {
+            throw e;
+        } catch (IOException e) {
+            log.error("文件魔数校验失败", e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件校验失败");
+        }
     }
 
     /**

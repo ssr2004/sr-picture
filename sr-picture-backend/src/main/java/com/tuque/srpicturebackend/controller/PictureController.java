@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.tuque.srpicturebackend.annotation.AuthCheck;
+import com.tuque.srpicturebackend.annotation.RateLimit;
 import com.tuque.srpicturebackend.api.aliyunai.AliYunAiApi;
 import com.tuque.srpicturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.tuque.srpicturebackend.api.aliyunai.model.GetOutPaintingTaskResponse;
@@ -86,6 +87,7 @@ public class PictureController {
      * @return
      */
     @PostMapping("/upload")
+    @RateLimit(maxCount = 10, timeWindowSeconds = 60, message = "上传过于频繁，请稍后再试")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     //@AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<PictureVO> uploadPicture(@RequestPart("file")MultipartFile multipartFile,
@@ -103,6 +105,7 @@ public class PictureController {
      * @return
      */
     @PostMapping("/upload/url")
+    @RateLimit(maxCount = 10, timeWindowSeconds = 60, message = "上传过于频繁，请稍后再试")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResponse<PictureVO> uploadPictureByUrl(@RequestBody PictureUploadRequest pictureUploadRequest,
                                                  HttpServletRequest request){
@@ -377,6 +380,7 @@ public class PictureController {
      * @return
      */
     @PostMapping("/upload/batch")
+    @RateLimit(maxCount = 5, timeWindowSeconds = 60, message = "批量上传过于频繁，请稍后再试")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Integer> uploadPictureByBatch(@RequestBody PictureUploadByBatchRequest pictureUploadByBatchRequest,
                                                  HttpServletRequest request){
@@ -393,6 +397,7 @@ public class PictureController {
      * @return
      */
     @PostMapping("/search/color")
+    @RateLimit(maxCount = 20, timeWindowSeconds = 60)
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_VIEW)
     public BaseResponse<List<PictureVO>> searchPictureByColor(@RequestBody SearchPictureByColorRequest searchPictureByColorRequest,
                                                               HttpServletRequest request) {

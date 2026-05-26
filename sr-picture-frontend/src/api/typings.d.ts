@@ -89,6 +89,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseMapStringObject_ = {
+    code?: number
+    data?: Record<string, any>
+    message?: string
+  }
+
   type BaseResponsePagePicture_ = {
     code?: number
     data?: PagePicture_
@@ -134,12 +140,6 @@ declare namespace API {
   type BaseResponsePictureVO_ = {
     code?: number
     data?: PictureVO
-    message?: string
-  }
-
-  type BaseResponseMapStringObject_ = {
-    code?: number
-    data?: Record<string, any>
     message?: string
   }
 
@@ -447,9 +447,19 @@ declare namespace API {
     userId?: number
   }
 
+  type recognizePictureTagsUsingPOSTParams = {
+    /** imageUrl */
+    imageUrl: string
+  }
+
   type SearchPictureByColorRequest = {
     picColor?: string
     spaceId?: number
+  }
+
+  type searchUsersUsingGETParams = {
+    /** keyword */
+    keyword: string
   }
 
   type Space = {
