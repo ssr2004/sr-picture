@@ -31,4 +31,9 @@ public class PictureUploadRequest implements Serializable {
      */
     private Long spaceId;
 
+    /**
+     * 业务类型：avatar=头像上传（不入库），默认为图片上传
+     */
+    private String bizType;
+
 }

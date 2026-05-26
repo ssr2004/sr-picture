@@ -3,12 +3,23 @@
     <div class="search-bar">
       <a-input-search
         v-model:value="searchParams.searchText"
-        placeholder="从海量图片中搜索"
+        placeholder="关键字 搜索"
         enter-button="搜索"
         size="large"
         @search="doSearch"
         allow-clear
       />
+      <div class="ai-search-bar">
+        <a-input-search
+          v-model:value="aiSearchQuery"
+          placeholder="AI 语义搜索：试试输入「海边风景」「蓝色背景的证件照」"
+          enter-button="AI 搜索"
+          size="large"
+          :loading="aiLoading"
+          @search="doAISearch"
+          allow-clear
+        />
+      </div>
     </div>
 
     <!-- 分类 + 标签 -->
@@ -46,6 +57,7 @@ import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
 } from '@/api/pictureController'
+import { searchByAiUsingPost } from '@/api/pictureSearchController'
 import PictureList from '@/components/PictureList.vue'
 import { message } from 'ant-design-vue'
 import { computed, onMounted, reactive, ref } from 'vue'
@@ -102,7 +114,40 @@ onMounted(() => {
 const doSearch = () => {
   //重置页码
   searchParams.current = 1
+  aiSearchQuery.value = ''
+  isAIMode.value = false
   fetchData()
+}
+
+// AI 语义搜索
+const aiSearchQuery = ref('')
+const aiLoading = ref(false)
+const isAIMode = ref(false)
+
+const doAISearch = async () => {
+  if (!aiSearchQuery.value || aiSearchQuery.value.trim() === '') {
+    isAIMode.value = false
+    searchParams.current = 1
+    fetchData()
+    return
+  }
+  aiLoading.value = true
+  isAIMode.value = true
+  try {
+    const res = await searchByAiUsingPost({
+      query: aiSearchQuery.value,
+    })
+    if (res.data.code === 0 && res.data.data) {
+      dataList.value = res.data.data
+      total.value = res.data.data.length
+    } else {
+      message.error('AI 搜索失败：' + res.data.message)
+    }
+  } catch (e) {
+    message.error('AI 搜索请求失败')
+  } finally {
+    aiLoading.value = false
+  }
 }
 
 const categoryList = ref<string[]>([])
@@ -158,8 +203,11 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 #homePage .search-bar {
-  max-width: 480px;
+  max-width: 560px;
   margin: 0 auto 16px;
+}
+#homePage .ai-search-bar {
+  margin-top: 12px;
 }
 #homePage .tag-bar {
   margin-bottom: 16px;

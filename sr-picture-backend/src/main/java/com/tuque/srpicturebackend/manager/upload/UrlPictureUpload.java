@@ -87,10 +87,17 @@ public class UrlPictureUpload extends PictureUploadTemplate {
         String fileUrl = (String) inputSource;
         try {
             URL url = new URL(fileUrl);
-            return FileUtil.getName(url.getPath());
+            String name = FileUtil.getName(url.getPath());
+            // 校验文件名：长度 > 2 且不是纯数字/布尔值
+            if (StrUtil.isNotBlank(name) && name.length() > 2
+                    && !name.equalsIgnoreCase("true") && !name.equalsIgnoreCase("false")) {
+                return name;
+            }
         } catch (MalformedURLException e) {
-            return FileUtil.getName(fileUrl);
+            // ignore
         }
+        // fallback：用 URL 哈希值生成文件名
+        return "img_" + Math.abs(fileUrl.hashCode()) + ".jpg";
     }
 
     /**

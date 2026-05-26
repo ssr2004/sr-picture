@@ -32,6 +32,9 @@ import com.tuque.srpicturebackend.model.enums.PictureReviewStatusEnum;
 import com.tuque.srpicturebackend.model.vo.PictureVO;
 import com.tuque.srpicturebackend.model.vo.UserVO;
 import com.tuque.srpicturebackend.service.PictureService;
+import com.tuque.srpicturebackend.service.PictureSearchService;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.tuque.srpicturebackend.service.PictureReviewAgentService;
 import com.tuque.srpicturebackend.mapper.PictureMapper;
 import com.tuque.srpicturebackend.service.SpaceService;
 import com.tuque.srpicturebackend.service.UserService;
@@ -43,6 +46,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,6 +92,13 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     private TransactionTemplate transactionTemplate;
     @Resource
     private AliYunAiApi aliYunAiApi;
+    @Autowired(required = false)
+    private PictureSearchService pictureSearchService;
+    @Autowired(required = false)
+    private PictureReviewAgentService pictureReviewAgentService;
+    @Resource
+    @Lazy
+    private PictureServiceImpl selfProxy;
     /**
      * 图片上传
      * @param inputSource
@@ -98,6 +109,15 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     @Override
     public PictureVO uploadPicture(Object inputSource, PictureUploadRequest pictureUploadRequest, User loginUser) {
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
+        // 头像上传：只上传 COS，不入库
+        if (pictureUploadRequest != null && "avatar".equals(pictureUploadRequest.getBizType())) {
+            String uploadPathPrefix = String.format("avatar/%s", loginUser.getId());
+            PictureUploadTemplate template = inputSource instanceof String ? urlPictureUpload : filepictureUpload;
+            UploadPictureResult result = template.uploadPicture(inputSource, uploadPathPrefix);
+            PictureVO vo = new PictureVO();
+            vo.setUrl(result.getUrl());
+            return vo;
+        }
         //校验空间是否存在
         Long spaceId = pictureUploadRequest.getSpaceId();
         if(spaceId != null){
@@ -210,7 +230,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
         // 异步 AI 识别标签（仅新增时触发，更新时不覆盖用户手动设置）
         if (pictureId == null) {
-            autoRecognizeTags(picture.getId(), picture.getUrl());
+            selfProxy.autoRecognizeTags(picture.getId(), picture.getUrl());
         }
 
         return PictureVO.objToVo(picture);
@@ -252,7 +272,11 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         if(StrUtil.isNotBlank(searchText)){
             queryWrapper.and(qw -> qw.like("name", searchText)
                     .or()
-                    .like("introduction", searchText));
+                    .like("introduction", searchText)
+                    .or()
+                    .like("category", searchText)
+                    .or()
+                    .like("tags", searchText));
         }
         queryWrapper.eq(ObjUtil.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjUtil.isNotEmpty(userId), "userId", userId);
@@ -556,9 +580,38 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
                     .set(StrUtil.isNotBlank(category), Picture::getCategory, category)
                     .update();
             log.info("AI 图片标签识别完成，pictureId: {}, tags: {}, category: {}", pictureId, tags, category);
+            // 用 AI 生成的自然语言描述做向量化存储（用于语义搜索）
+            if (pictureSearchService != null) {
+                String aiDescription = jsonObject.getStr("description");
+                if (StrUtil.isBlank(aiDescription)) {
+                    aiDescription = buildPictureDescription(null, tags, category);
+                }
+                pictureSearchService.indexPicture(pictureId, aiDescription);
+            }
+            // AI Agent 自动审核图片
+            if (pictureReviewAgentService != null) {
+                pictureReviewAgentService.reviewPicture(pictureId, imageUrl);
+            }
         } catch (Exception e) {
             log.error("AI 图片标签识别失败，pictureId: {}", pictureId, e);
         }
+    }
+
+    /**
+     * 构建图片描述文本（用于向量化）
+     */
+    private String buildPictureDescription(String picName, List<String> tags, String category) {
+        StringBuilder sb = new StringBuilder();
+        if (StrUtil.isNotBlank(picName)) {
+            sb.append(picName).append("。");
+        }
+        if (StrUtil.isNotBlank(category)) {
+            sb.append("分类：").append(category).append("。");
+        }
+        if (tags != null && !tags.isEmpty()) {
+            sb.append("标签：").append(String.join("、", tags));
+        }
+        return sb.toString();
     }
 
     /**
@@ -658,6 +711,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         //操作数据库
         boolean result = this.updateById(picture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        // 编辑后重新触发 AI 审核
+        if (pictureReviewAgentService != null) {
+            pictureReviewAgentService.reviewPicture(id, oldPicture.getUrl());
+        }
     }
 
 

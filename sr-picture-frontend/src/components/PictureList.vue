@@ -15,18 +15,10 @@
           />
         </template>
         <div class="card-info">
-          <a-card-meta :title="picture.name">
-            <template #description>
-              <a-flex>
-                <a-tag color="green">
-                  {{ picture.category ?? '默认' }}
-                </a-tag>
-                <a-tag v-for="tag in picture.tags" :key="tag">
-                  {{ tag }}
-                </a-tag>
-              </a-flex>
-            </template>
-          </a-card-meta>
+          <a-flex wrap="wrap" :gap="4">
+            <a-tag v-if="picture.category" color="green">{{ picture.category }}</a-tag>
+            <a-tag v-for="tag in picture.tags" :key="tag">{{ tag }}</a-tag>
+          </a-flex>
         </div>
         <template v-if="showOp" #actions>
           <share-alt-outlined @click="(e) => doShare(picture, e)" />
@@ -151,6 +143,11 @@ const doShare = (picture: API.PictureVO, e: Event) => {
   cursor: pointer;
 }
 
+.picture-card :deep(.ant-card) {
+  position: relative;
+  overflow: hidden;
+}
+
 .picture-card :deep(.ant-card:hover) {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
@@ -160,12 +157,29 @@ const doShare = (picture: API.PictureVO, e: Event) => {
   display: block;
 }
 
+.picture-card :deep(.ant-card-body) {
+  padding: 0;
+}
+
 .picture-card .card-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .picture-card:hover .card-info {
   opacity: 1;
+}
+
+.picture-card .card-info :deep(.ant-tag) {
+  margin-inline-end: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: #fff;
 }
 </style>

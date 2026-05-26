@@ -93,7 +93,7 @@ const beforeAvatarUpload = (file: UploadProps['fileList'][number]) => {
 const handleAvatarUpload = async ({ file }: any) => {
   avatarLoading.value = true
   try {
-    const res = await uploadPictureUsingPost({}, {}, file)
+    const res = await uploadPictureUsingPost({ bizType: 'avatar' }, {}, file)
     if (res.data.code === 0 && res.data.data) {
       formState.userAvatar = res.data.data.url ?? ''
       message.success('头像上传成功')

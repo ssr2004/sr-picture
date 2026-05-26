@@ -93,3 +93,13 @@ cos:
 #阿里云ai配置
 aliYunAi:
   apiKey: ${sr.aliYunAi.apiKey}
+#LangChain4j配置
+langchain4j:
+  community:
+    dashscope:
+      chat-model:
+        api-key: ${sr.aliYunAi.apiKey}
+        model-name: qwen-plus
+picture:
+  search:
+    vector-enabled: true

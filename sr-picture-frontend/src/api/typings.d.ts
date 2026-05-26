@@ -1,4 +1,9 @@
 declare namespace API {
+  type AISearchRequest = {
+    query?: string
+    spaceId?: number
+  }
+
   type BaseResponseBoolean_ = {
     code?: number
     data?: boolean
